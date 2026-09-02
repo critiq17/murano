@@ -1,0 +1,35 @@
+{
+	"name": "murano-monorepo",
+	"private": true,
+	"type": "module",
+	"license": "MIT",
+	"engines": {
+		"node": ">=20"
+	},
+	"packageManager": "pnpm@10.24.0",
+	"scripts": {
+		"build": "pnpm -r build",
+		"dev": "pnpm --filter @murano/docs dev",
+		"check": "pnpm -r check",
+		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write .",
+		"test": "pnpm -r test",
+		"test:e2e": "pnpm --filter murano test:e2e",
+		"size": "pnpm --filter murano size",
+		"changeset": "changeset",
+		"release": "pnpm build && changeset publish"
+	},
+	"devDependencies": {
+		"@changesets/cli": "^3.0.1",
+		"eslint": "^10.9.1",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-svelte": "^3.23.0",
+		"globals": "^17.12.0",
+		"prettier": "^3.9.6",
+		"prettier-plugin-svelte": "^4.1.1",
+		"typescript": "~5.9.3",
+		"typescript-eslint": "^8.69.0",
+		"@changesets/changelog-github": "^1.0.0",
+		"@eslint/js": "^10.0.1"
+	}
+}

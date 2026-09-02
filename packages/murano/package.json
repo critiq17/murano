@@ -1,0 +1,98 @@
+{
+	"name": "murano",
+	"version": "0.0.0",
+	"description": "Apple-grade Liquid Glass for Svelte 5. Real refraction, chromatic aberration and specular highlights, with honest fallbacks in Safari and Firefox. Zero runtime dependencies.",
+	"license": "MIT",
+	"author": "Artem",
+	"type": "module",
+	"sideEffects": [
+		"**/*.css"
+	],
+	"keywords": [
+		"svelte",
+		"sveltekit",
+		"liquid-glass",
+		"glassmorphism",
+		"glass",
+		"backdrop-filter",
+		"feDisplacementMap",
+		"refraction",
+		"ui",
+		"apple"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/artem/murano.git"
+	},
+	"homepage": "https://murano.dev",
+	"bugs": {
+		"url": "https://github.com/artem/murano/issues"
+	},
+	"files": [
+		"dist",
+		"!dist/**/*.test.*",
+		"!dist/**/*.spec.*"
+	],
+	"svelte": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"svelte": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./core": {
+			"types": "./dist/core/index.d.ts",
+			"default": "./dist/core/index.js"
+		},
+		"./styles.css": "./dist/styles/index.css",
+		"./package.json": "./package.json"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	},
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build && svelte-package && publint",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"test": "vitest run",
+		"test:e2e": "playwright test",
+		"size": "size-limit"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.62.1",
+		"@size-limit/preset-small-lib": "^13.0.3",
+		"@sveltejs/adapter-static": "^3.0.10",
+		"@sveltejs/kit": "^2.70.3",
+		"@sveltejs/package": "^2.5.8",
+		"@sveltejs/vite-plugin-svelte": "^7.3.0",
+		"@vitest/browser": "^4.1.11",
+		"playwright": "^1.62.1",
+		"publint": "^0.3.24",
+		"size-limit": "^13.0.3",
+		"svelte": "^5.57.0",
+		"svelte-check": "^4.7.6",
+		"typescript": "~5.9.3",
+		"vite": "^8.2.2",
+		"vitest": "^4.1.11"
+	},
+	"size-limit": [
+		{
+			"name": "core",
+			"path": "dist/core/index.js",
+			"limit": "8 kB"
+		},
+		{
+			"name": "typical app",
+			"path": "dist/index.js",
+			"import": "{ GlassSurface, GlassCard, GlassButton, GlassInput, GlassNav }",
+			"limit": "14 kB"
+		},
+		{
+			"name": "full barrel",
+			"path": "dist/index.js",
+			"limit": "28 kB"
+		}
+	]
+}
