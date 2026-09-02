@@ -9,6 +9,7 @@ import { displacementPad, axisScaleMatrix, buildFilter } from '$lib/core/filter.
 import { generateMap, shapeKey } from '$lib/core/displacement.js';
 import { getMap, clearMapCache, mapCacheSize } from '$lib/core/cache.js';
 import { resolveSource } from '$lib/core/source.js';
+import { createGlass } from '$lib/core/glass.js';
 import type { MapShape } from '$lib/core/types.js';
 
 const caps = (o: Partial<Capabilities> = {}): Capabilities => ({
@@ -281,5 +282,49 @@ describe('source resolution', () => {
 			const r = resolveSource(host, { image: '/bg.avif' });
 			expect(r?.style['background-image']).toContain('/bg.avif');
 		});
+	});
+});
+
+describe('surviving a consumer-owned style attribute', () => {
+	function mount() {
+		const parent = document.createElement('div');
+		parent.style.cssText = 'width:600px;height:400px;background:rgb(20, 20, 30)';
+		const host = document.createElement('div');
+		host.style.cssText = 'width:300px;height:200px';
+		parent.append(host);
+		document.body.append(parent);
+		return { parent, host };
+	}
+
+	it('keeps the optics when the host style attribute is rewritten', async () => {
+		const { parent, host } = mount();
+		const glass = createGlass(host, { radius: 32 });
+		try {
+			expect(host.getAttribute('data-murano-id')).toBeTruthy();
+
+			// Exactly what a framework does when a dynamic `style="translate: ..."` updates:
+			// the whole attribute is replaced, taking any inline properties with it.
+			host.setAttribute('style', 'translate: 40px 12px');
+
+			const resolved = getComputedStyle(host);
+			expect(resolved.getPropertyValue('--murano-radius').trim()).toBe('32px');
+			if (glass.engine === 'backdrop' || glass.engine === 'frost') {
+				expect(resolved.backdropFilter).not.toBe('none');
+			}
+		} finally {
+			glass.destroy();
+			parent.remove();
+		}
+	});
+
+	it('removes every artifact on destroy', () => {
+		const { parent, host } = mount();
+		const glass = createGlass(host, {});
+		glass.destroy();
+		expect(host.getAttribute('data-murano-id')).toBeNull();
+		expect(host.getAttribute('data-murano-engine')).toBeNull();
+		expect(host.querySelector('[data-murano-layer]')).toBeNull();
+		expect(getComputedStyle(host).getPropertyValue('--murano-radius').trim()).toBe('');
+		parent.remove();
 	});
 });

@@ -3,6 +3,7 @@ import { DEV } from './env.js';
 import { acquireDefs, nextFilterId, releaseDefs } from './defs.js';
 import { getCapabilities, getPreferences, resolveEngine, watchPreferences } from './detect.js';
 import { buildFilter, displacementPad, type FilterSpec } from './filter.js';
+import { acquireRule, nextInstanceId, type GlassRule } from './sheet.js';
 import { applySource, resolveSource, type ResolvedSource } from './source.js';
 import {
 	DEFAULTS,
@@ -39,6 +40,10 @@ export function createGlass(host: HTMLElement, init: GlassInit = {}): GlassInsta
 	let options = merge(DEFAULTS, init);
 	let engine: Engine = 'none';
 	let destroyed = false;
+
+	const instanceId = nextInstanceId();
+	host.setAttribute('data-murano-id', instanceId);
+	const rule: GlassRule = acquireRule(host, instanceId);
 
 	const filterBase = nextFilterId();
 	let filterVersion = 0;
@@ -152,9 +157,18 @@ export function createGlass(host: HTMLElement, init: GlassInit = {}): GlassInsta
 		defs.append(filter);
 	}
 
+	/** Write a declaration for this instance. Falls back to inline when a sheet is unavailable. */
+	function set(prop: string, value: string): void {
+		(rule.style ?? host.style).setProperty(prop, value);
+	}
+
+	function unset(prop: string): void {
+		(rule.style ?? host.style).removeProperty(prop);
+	}
+
 	function clearVisuals(): void {
-		host.style.removeProperty('backdrop-filter');
-		host.style.removeProperty('-webkit-backdrop-filter');
+		unset('backdrop-filter');
+		unset('-webkit-backdrop-filter');
 		lensLayer?.style.removeProperty('filter');
 	}
 
@@ -180,11 +194,11 @@ export function createGlass(host: HTMLElement, init: GlassInit = {}): GlassInsta
 			options.onEngineResolved?.(engine);
 		}
 
-		host.style.setProperty('--murano-radius', `${options.radius}px`);
-		host.style.setProperty('--murano-saturation', String(options.saturation));
-		host.style.setProperty('--murano-fallback-blur', `${options.fallback.blur}px`);
-		host.style.setProperty('--murano-fallback-opacity', String(options.fallback.opacity));
-		host.style.setProperty('--murano-specular', String(options.specular.intensity));
+		set('--murano-radius', `${options.radius}px`);
+		set('--murano-saturation', String(options.saturation));
+		set('--murano-fallback-blur', `${options.fallback.blur}px`);
+		set('--murano-fallback-opacity', String(options.fallback.opacity));
+		set('--murano-specular', String(options.specular.intensity));
 
 		if (engine === 'none') {
 			clearVisuals();
@@ -196,8 +210,8 @@ export function createGlass(host: HTMLElement, init: GlassInit = {}): GlassInsta
 			clearVisuals();
 			removeLensLayer();
 			const value = `blur(${options.fallback.blur}px) saturate(${options.saturation})`;
-			host.style.setProperty('-webkit-backdrop-filter', value);
-			host.style.setProperty('backdrop-filter', value);
+			set('-webkit-backdrop-filter', value);
+			set('backdrop-filter', value);
 			return;
 		}
 
@@ -216,15 +230,15 @@ export function createGlass(host: HTMLElement, init: GlassInit = {}): GlassInsta
 			// two-declaration cascade trick.
 			const plain = `blur(${options.blur}px) saturate(${options.saturation})`;
 			const enhanced = `blur(${options.blur}px) url(#${filterId}) saturate(${options.saturation})`;
-			host.style.setProperty('backdrop-filter', plain);
-			host.style.setProperty('backdrop-filter', enhanced);
-			host.style.setProperty('-webkit-backdrop-filter', plain);
+			set('backdrop-filter', plain);
+			set('backdrop-filter', enhanced);
+			set('-webkit-backdrop-filter', plain);
 			return;
 		}
 
 		// engine === 'lens'
-		host.style.removeProperty('backdrop-filter');
-		host.style.removeProperty('-webkit-backdrop-filter');
+		unset('backdrop-filter');
+		unset('-webkit-backdrop-filter');
 		if (!source) return;
 		const { clip, paint } = ensureLensLayer();
 		applySource(paint, host, source);
@@ -278,7 +292,9 @@ export function createGlass(host: HTMLElement, init: GlassInit = {}): GlassInsta
 			if (defs) releaseDefs(host);
 			removeLensLayer();
 			clearVisuals();
+			rule.dispose();
 			host.removeAttribute('data-murano-engine');
+			host.removeAttribute('data-murano-id');
 		},
 		get engine() {
 			return engine;

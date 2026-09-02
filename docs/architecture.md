@@ -183,6 +183,22 @@ specular layer on light backgrounds.
 
 `contain: layout paint style` and `isolation: isolate` on the host.
 
+### The host's inline style belongs to the consumer
+
+The optics are written to a per-instance rule in a library-owned stylesheet
+(`[data-murano-id="…"]`), never to the host's inline style.
+
+A surface is frequently something the consumer also animates: `style="translate: {x}px {y}px"`
+on a draggable card is the obvious case. When a framework updates a dynamic `style` attribute it
+replaces the attribute wholesale, which silently wipes every property the library had set there.
+The refraction, the tint and the custom properties all disappear, and the surface reverts to a
+plain box until something else happens to trigger a re-apply. Owning a rule means the two can
+never collide.
+
+Per-frame interaction values (`--murano-light-x`, the elastic transform) stay inline: they are
+rewritten on the next frame anyway, so a wipe self-heals, and mutating a style rule 60 times a
+second would cost a document-wide recalc.
+
 ---
 
 ## 5. Public API
