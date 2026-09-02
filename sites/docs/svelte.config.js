@@ -8,7 +8,9 @@ export default {
 	preprocess: [vitePreprocess(), mdsvex({ extensions: ['.md'] })],
 	kit: {
 		adapter: adapter({ fallback: '404.html' }),
-		paths: { base: process.env.BASE_PATH ?? '' },
+		// GitHub Pages serves this repository as a project site. Keep local preview at `/`,
+		// while Actions automatically builds with `/murano` as the base path.
+		paths: { base: process.env.BASE_PATH ?? (process.env.GITHUB_ACTIONS ? '/murano' : '') },
 		alias: {
 			'@murano': '../../packages/murano/src/lib'
 		}
