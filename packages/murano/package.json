@@ -1,6 +1,6 @@
 {
 	"name": "murano",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Apple-grade Liquid Glass for Svelte 5. Real refraction, chromatic aberration and specular highlights, with honest fallbacks in Safari and Firefox. Zero runtime dependencies.",
 	"license": "MIT",
 	"author": "Artem",
