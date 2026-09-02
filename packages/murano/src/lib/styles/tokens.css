@@ -1,0 +1,40 @@
+/* Design tokens. Every prop has a mirror custom property, so a theme is a stylesheet. */
+:root {
+	--glass-tint: 255 255 255;
+	--glass-tint-opacity: 0.1;
+	--glass-blur: 12px;
+	--glass-saturation: 1.6;
+	--glass-radius: 24px;
+	--glass-displacement: -112;
+	--glass-chromatic: 6;
+	--glass-edge: 0.07;
+	--glass-specular: 0.5;
+	--glass-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+	--glass-border: rgb(255 255 255 / 0.18);
+	--glass-duration: 320ms;
+	--glass-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root,
+[data-theme='light'] {
+	--glass-tint: 255 255 255;
+	--glass-tint-opacity: 0.55;
+	--glass-border: rgb(255 255 255 / 0.7);
+	--glass-shadow: 0 18px 40px rgb(0 0 0 / 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--glass-tint: 255 255 255;
+		--glass-tint-opacity: 0.1;
+		--glass-border: rgb(255 255 255 / 0.18);
+		--glass-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+	}
+}
+
+[data-theme='dark'] {
+	--glass-tint: 255 255 255;
+	--glass-tint-opacity: 0.1;
+	--glass-border: rgb(255 255 255 / 0.18);
+	--glass-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+}

@@ -92,8 +92,8 @@ Full reasoning: [docs/architecture.md](./docs/architecture.md).
 	source="auto"
 	displacement={-112}
 	chromatic={6}
-	edge={0.07}
-	curvature={12}
+	edge={0.12}
+	curvature={0.35}
 	blur={3}
 	saturation={1.5}
 	specular={{ angle: 135, intensity: 0.5 }}

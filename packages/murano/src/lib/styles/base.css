@@ -1,0 +1,73 @@
+/*
+ * Structural styles for a glass surface.
+ *
+ * The optics come from the SVG filter that `createGlass` applies. Everything here is the
+ * dressing that filter cannot provide: tint, border, shadow, the pointer-tracked glare, and
+ * the accessibility overrides.
+ */
+
+[data-murano-engine] {
+	position: relative;
+	isolation: isolate;
+	contain: layout paint style;
+	border-radius: var(--murano-radius, var(--glass-radius));
+	background-color: rgb(var(--glass-tint) / var(--glass-tint-opacity));
+	box-shadow:
+		var(--glass-shadow),
+		inset 0 0 0 1px var(--glass-border);
+	transition:
+		background-color var(--glass-duration) var(--glass-ease),
+		box-shadow var(--glass-duration) var(--glass-ease);
+}
+
+/* Layer 1: the lens copy. Behind everything, never interactive, never announced. */
+[data-murano-layer='lens'] {
+	z-index: 0;
+}
+
+/*
+ * Layer 3: specular. The map's blue channel carries the static rim sheen; this is the moving
+ * glare that follows the pointer. Keeping them separate is what lets the light move at 60fps
+ * without regenerating the displacement map.
+ */
+[data-murano-engine]::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	border-radius: inherit;
+	opacity: var(--murano-glare, 0);
+	background: radial-gradient(
+		120px 120px at var(--murano-light-x, 50%) var(--murano-light-y, 0%),
+		rgb(255 255 255 / 0.28),
+		transparent 70%
+	);
+	transition: opacity var(--glass-duration) var(--glass-ease);
+}
+
+/* Layer 4: content. Always crisp, never under a displacement filter. */
+[data-murano-engine] > :not([data-murano-layer]) {
+	position: relative;
+	z-index: 2;
+}
+
+/* Layer 5: focus. Above the specular, or the highlight swallows it on light backdrops. */
+[data-murano-engine]:focus-visible,
+[data-murano-engine] :focus-visible {
+	outline: 2px solid rgb(10 132 255);
+	outline-offset: 2px;
+	z-index: 3;
+}
+
+/* Engine with no refraction gets a stronger backing, since it has no rim to read as glass. */
+[data-murano-engine='frost'] {
+	background-color: rgb(var(--glass-tint) / var(--murano-fallback-opacity, 0.72));
+}
+
+[data-murano-engine='none'] {
+	background-color: Canvas;
+	color: CanvasText;
+	box-shadow: none;
+	border: 1px solid CanvasText;
+}

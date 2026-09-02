@@ -1,0 +1,56 @@
+/*
+ * Accessibility overrides. These live in CSS, not JS, so they apply before hydration and on the
+ * server-rendered output. See docs/accessibility.md.
+ */
+
+/* Apple's own Reduced Transparency makes the material frostier and hides more behind it. */
+@media (prefers-reduced-transparency: reduce) {
+	[data-murano-engine] {
+		--glass-tint-opacity: 0.95;
+		backdrop-filter: blur(8px) !important;
+		-webkit-backdrop-filter: blur(8px) !important;
+	}
+	[data-murano-layer='lens'] {
+		display: none;
+	}
+	[data-murano-engine]::after {
+		opacity: 0 !important;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-murano-engine],
+	[data-murano-engine]::after {
+		transition-duration: 1ms;
+	}
+	[data-murano-engine] {
+		transform: none !important;
+	}
+}
+
+@media (prefers-contrast: more) {
+	[data-murano-engine] {
+		--glass-tint-opacity: 0.88;
+		--glass-border: currentColor;
+		box-shadow: inset 0 0 0 1px currentColor;
+	}
+	[data-murano-engine]::after {
+		display: none;
+	}
+}
+
+@media (forced-colors: active) {
+	[data-murano-engine] {
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		background: Canvas !important;
+		color: CanvasText;
+		box-shadow: none;
+		border: 1px solid CanvasText;
+		forced-color-adjust: auto;
+	}
+	[data-murano-layer='lens'],
+	[data-murano-engine]::after {
+		display: none !important;
+	}
+}

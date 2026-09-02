@@ -297,5 +297,10 @@ That is how an elastic press animates at 60 fps without touching the canvas.
 | `specular.angle`     |        | 0..360°  | Where the sheen pools. 0 is left, 135 is the Apple default. |
 | `specular.intensity` |        | 0..1     | Gain on the B-channel mask.                                 |
 
-Two defaults worth stating: `displacement: -112`, `edge: 0.07`, `chromatic: 6`, `curvature: 12`
-is the shape most published implementations converge on, and it is a reasonable place to start.
+Shipped defaults: `displacement: -112`, `chromatic: 6`, `edge: 0.12`, `curvature: 0.35`.
+
+The displacement and chromatic figures are where published implementations converge. `edge` sits
+above the 0.07 that most of them use, because those implementations feather the rim with a blur
+on the neutral centre rect while we use an `erf` falloff, which reads thinner at the same
+nominal width. `curvature` is a 0..1 cap fraction here, not the pixel `mapBlur` other libraries
+expose under a similar name.

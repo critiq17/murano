@@ -15,5 +15,12 @@ export default ts.config(
 		files: ['**/*.svelte'],
 		languageOptions: { parserOptions: { parser: ts.parser } }
 	},
+	{
+		// A test that reaches into a DOM query result IS the assertion that it exists: if the
+		// value is missing the test fails, which is the outcome we want. Forcing a guard around
+		// every lookup buries the thing being tested.
+		files: ['**/*.{test,spec}.{js,ts}', '**/e2e/**'],
+		rules: { '@typescript-eslint/no-non-null-assertion': 'off' }
+	},
 	{ ignores: ['**/dist/', '**/.svelte-kit/', '**/build/', '**/node_modules/'] }
 );
