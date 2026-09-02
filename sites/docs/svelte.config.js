@@ -8,6 +8,9 @@ export default {
 	preprocess: [vitePreprocess(), mdsvex({ extensions: ['.md'] })],
 	kit: {
 		adapter: adapter({ fallback: '404.html' }),
-		paths: { base: process.env.BASE_PATH ?? '' }
+		paths: { base: process.env.BASE_PATH ?? '' },
+		alias: {
+			'@murano': '../../packages/murano/src/lib'
+		}
 	}
 };

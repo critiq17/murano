@@ -12,7 +12,7 @@
 <!-- 5s loop: a glass card dragged across a photo, edges bending, chroma at the rim -->
 <!-- TODO(phase 7): docs/assets/hero.mp4 -->
 
-**[Live playground](https://murano.dev/playground)** · [Docs](https://murano.dev/docs) · [Why it works in Safari](./docs/architecture.md)
+**[Live playground](https://critiq17.github.io/murano/)** · [GitHub repository](https://github.com/critiq17/murano) · [Why it works in Safari](./docs/architecture.md)
 
 </div>
 

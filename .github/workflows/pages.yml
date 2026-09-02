@@ -23,6 +23,8 @@ jobs:
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+        env:
+          BASE_PATH: /murano
       - uses: actions/upload-pages-artifact@v4
         with: { path: sites/docs/build }
 
