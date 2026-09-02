@@ -70,6 +70,7 @@
 		"@types/node": "^26.4.1",
 		"@vitest/browser": "^4.1.11",
 		"@vitest/browser-playwright": "^4.1.11",
+		"esbuild-svelte": "^0.9.5",
 		"playwright": "^1.62.1",
 		"publint": "^0.3.24",
 		"size-limit": "^13.0.3",
@@ -78,23 +79,5 @@
 		"typescript": "~5.9.3",
 		"vite": "^8.2.2",
 		"vitest": "^4.1.11"
-	},
-	"size-limit": [
-		{
-			"name": "core",
-			"path": "dist/core/index.js",
-			"limit": "8 kB"
-		},
-		{
-			"name": "typical app",
-			"path": "dist/index.js",
-			"import": "{ GlassSurface, GlassCard, GlassButton, GlassInput, GlassNav }",
-			"limit": "14 kB"
-		},
-		{
-			"name": "full barrel",
-			"path": "dist/index.js",
-			"limit": "28 kB"
-		}
-	]
+	}
 }

@@ -71,6 +71,9 @@ importers:
       '@vitest/browser-playwright':
         specifier: ^4.1.11
         version: 4.1.11(playwright@1.62.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(yaml@2.9.0))(vitest@4.1.11)
+      esbuild-svelte:
+        specifier: ^0.9.5
+        version: 0.9.5(esbuild@0.28.2)(svelte@5.57.0(@typescript-eslint/types@8.69.0))
       playwright:
         specifier: ^1.62.1
         version: 1.62.1
@@ -858,6 +861,13 @@ packages:
 
   es-module-lexer@2.3.2:
     resolution: {integrity: sha512-poHGpORABojJJucnV9KbOavETW8lBVnphkW77ER5/BQ5Fz7oXSoCNek7IH3vR5nRjdsEz926ibFYX8KtLQmdyw==}
+
+  esbuild-svelte@0.9.5:
+    resolution: {integrity: sha512-16FUSj64aiS28CCxYeK3hVxCyU4PwGBSkeArawAtnWSV7l0Gc+frIOP88MNj8Q7tDAGyEJAHT6OpOvM24BG46w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      esbuild: '>=0.17.0'
+      svelte: '>=4.2.1 <6'
 
   esbuild@0.28.2:
     resolution: {integrity: sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==}
@@ -2295,6 +2305,12 @@ snapshots:
   devalue@5.9.2: {}
 
   es-module-lexer@2.3.2: {}
+
+  esbuild-svelte@0.9.5(esbuild@0.28.2)(svelte@5.57.0(@typescript-eslint/types@8.69.0)):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.31
+      esbuild: 0.28.2
+      svelte: 5.57.0(@typescript-eslint/types@8.69.0)
 
   esbuild@0.28.2:
     optionalDependencies:

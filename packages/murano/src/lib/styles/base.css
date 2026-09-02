@@ -1,9 +1,17 @@
 /*
  * Structural styles for a glass surface.
  *
- * The optics come from the SVG filter that `createGlass` applies. Everything here is the
- * dressing that filter cannot provide: tint, border, shadow, the pointer-tracked glare, and
- * the accessibility overrides.
+ * The optics come from the SVG filter that `createGlass` applies through a per-instance rule.
+ * Everything here is what the filter cannot provide: tint, border, shadow, the pointer-tracked
+ * glare, the elastic press, and the layer order.
+ *
+ * Layer order, all on one element:
+ *   0  backdrop   the lens copy            [data-murano-layer="lens-paint"]
+ *   1  lens       clip carrying the filter [data-murano-layer="lens"]
+ *   2  tint       host background-color
+ *   3  specular   ::after
+ *   4  content    children
+ *   5  focus      focus ring, above the specular
  */
 
 [data-murano-engine] {
@@ -11,7 +19,22 @@
 	isolation: isolate;
 	contain: layout paint style;
 	border-radius: var(--murano-radius, var(--glass-radius));
-	background-color: rgb(var(--glass-tint) / var(--glass-tint-opacity));
+
+	/* The press uses `scale`, not `transform`: a consumer dragging a surface owns `translate`,
+	   and the independent transform properties keep the two from ever colliding. */
+	scale: var(--murano-press, 1);
+
+	/* Channel form first, so a theme can drive the tint through --glass-tint. The color-mix
+	   form then accepts any CSS colour for the per-instance `tint` prop; a browser without
+	   color-mix drops that declaration and keeps the one above. */
+	background-color: rgb(var(--glass-tint) / var(--murano-tint-opacity, var(--glass-tint-opacity)));
+	background-color: color-mix(
+		in srgb,
+		var(--murano-tint, rgb(var(--glass-tint)))
+			calc(var(--murano-tint-opacity, var(--glass-tint-opacity)) * 100%),
+		transparent
+	);
+
 	box-shadow:
 		var(--glass-shadow),
 		inset 0 0 0 1px var(--glass-border);
@@ -20,15 +43,15 @@
 		box-shadow var(--glass-duration) var(--glass-ease);
 }
 
-/* Layer 1: the lens copy. Behind everything, never interactive, never announced. */
+/* Layer 0 and 1. The clip is the host's box, which is what the filter region is derived from;
+   the paint carries the source's own box so `cover` and percentages resolve correctly. */
 [data-murano-layer='lens'] {
 	z-index: 0;
 }
 
 /*
- * Layer 3: specular. The map's blue channel carries the static rim sheen; this is the moving
- * glare that follows the pointer. Keeping them separate is what lets the light move at 60fps
- * without regenerating the displacement map.
+ * Layer 3. The map's blue channel carries the static rim sheen. This is the moving glare, kept
+ * separate so the light can travel at 60fps without regenerating the displacement map.
  */
 [data-murano-engine]::after {
 	content: '';
@@ -39,34 +62,39 @@
 	border-radius: inherit;
 	opacity: var(--murano-glare, 0);
 	background: radial-gradient(
-		120px 120px at var(--murano-light-x, 50%) var(--murano-light-y, 0%),
-		rgb(255 255 255 / 0.28),
+		clamp(80px, 40%, 220px) circle at var(--murano-light-x, 50%) var(--murano-light-y, 0%),
+		rgb(255 255 255 / 0.3),
 		transparent 70%
 	);
-	transition: opacity var(--glass-duration) var(--glass-ease);
 }
 
-/* Layer 4: content. Always crisp, never under a displacement filter. */
+/* Layer 4. Content is never under a displacement filter. */
 [data-murano-engine] > :not([data-murano-layer]) {
 	position: relative;
 	z-index: 2;
 }
 
-/* Layer 5: focus. Above the specular, or the highlight swallows it on light backdrops. */
+/* Layer 5. A ring drawn inside the content box gets swallowed by the specular on light
+   backdrops, so it sits above everything. */
 [data-murano-engine]:focus-visible,
 [data-murano-engine] :focus-visible {
-	outline: 2px solid rgb(10 132 255);
+	outline: 2px solid var(--glass-focus, rgb(10 132 255));
 	outline-offset: 2px;
 	z-index: 3;
 }
 
-/* Engine with no refraction gets a stronger backing, since it has no rim to read as glass. */
+/* No refraction means no rim to read as glass, so the backing carries more of the material. */
 [data-murano-engine='frost'] {
 	background-color: rgb(var(--glass-tint) / var(--murano-fallback-opacity, 0.72));
+	background-color: color-mix(
+		in srgb,
+		var(--murano-tint, rgb(var(--glass-tint))) calc(var(--murano-fallback-opacity, 0.72) * 100%),
+		transparent
+	);
 }
 
 [data-murano-engine='none'] {
-	background-color: Canvas;
+	background: Canvas;
 	color: CanvasText;
 	box-shadow: none;
 	border: 1px solid CanvasText;

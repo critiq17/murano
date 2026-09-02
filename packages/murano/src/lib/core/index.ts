@@ -13,6 +13,19 @@ export { getMap, hasMap, clearMapCache, mapCacheSize } from './cache.js';
 export { buildFilter, displacementPad, axisScaleMatrix, type FilterSpec } from './filter.js';
 export { resolveSource, applySource, type ResolvedSource } from './source.js';
 export { acquireRule, nextInstanceId, type GlassRule } from './sheet.js';
+export {
+	checkContrast,
+	composite,
+	contrastRatio,
+	luminance,
+	resolveColor,
+	warnIfUnreadable,
+	type ContrastCheck,
+	type ResolvedColor,
+	type Rgb
+} from './contrast.js';
+export { attachInteraction, type InteractionOptions } from './interaction.js';
+export { curveFor, resolveOptions, type Curve, type Variant } from './preset.js';
 export { DEV } from './env.js';
 export { DEFAULTS } from './types.js';
 export type {

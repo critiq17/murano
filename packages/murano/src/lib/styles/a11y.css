@@ -23,8 +23,12 @@
 	[data-murano-engine]::after {
 		transition-duration: 1ms;
 	}
+	/* The press spring is disabled in JS as well; this covers the frame before that runs. */
 	[data-murano-engine] {
-		transform: none !important;
+		scale: 1 !important;
+	}
+	[data-murano-engine]::after {
+		opacity: 0 !important;
 	}
 }
 

@@ -10,6 +10,8 @@ import { generateMap, shapeKey } from '$lib/core/displacement.js';
 import { getMap, clearMapCache, mapCacheSize } from '$lib/core/cache.js';
 import { resolveSource } from '$lib/core/source.js';
 import { createGlass } from '$lib/core/glass.js';
+import { checkContrast, contrastRatio, resolveColor } from '$lib/core/contrast.js';
+import { curveFor, resolveOptions } from '$lib/core/preset.js';
 import type { MapShape } from '$lib/core/types.js';
 
 const caps = (o: Partial<Capabilities> = {}): Capabilities => ({
@@ -326,5 +328,84 @@ describe('surviving a consumer-owned style attribute', () => {
 		expect(host.querySelector('[data-murano-layer]')).toBeNull();
 		expect(getComputedStyle(host).getPropertyValue('--murano-radius').trim()).toBe('');
 		parent.remove();
+	});
+});
+
+describe('colour resolution and contrast', () => {
+	it('resolves every notation getComputedStyle can hand back', () => {
+		// color-mix() resolves to color(srgb …) in Chrome, which no rgb() regex will match.
+		expect(resolveColor('rgb(232, 232, 238)')).toEqual({ rgb: [232, 232, 238], alpha: 1 });
+		expect(resolveColor('rgba(0, 0, 0, 0.5)')?.alpha).toBeCloseTo(0.5, 2);
+
+		const srgb = resolveColor('color(srgb 1 1 1 / 0.244)');
+		expect(srgb?.rgb).toEqual([255, 255, 255]);
+		expect(srgb?.alpha).toBeCloseTo(0.244, 2);
+
+		expect(resolveColor('#0a84ff')?.rgb).toEqual([10, 132, 255]);
+		expect(resolveColor('rebeccapurple')?.rgb).toEqual([102, 51, 153]);
+	});
+
+	it('rejects a value the browser cannot parse instead of reading it as black', () => {
+		expect(resolveColor('not-a-colour')).toBeNull();
+		expect(resolveColor('')).toBeNull();
+		// A genuine black must still resolve.
+		expect(resolveColor('#000000')?.rgb).toEqual([0, 0, 0]);
+	});
+
+	it('measures WCAG ratios', () => {
+		expect(contrastRatio([0, 0, 0], [255, 255, 255])).toBeCloseTo(21, 1);
+		expect(contrastRatio([255, 255, 255], [255, 255, 255])).toBeCloseTo(1, 3);
+	});
+
+	it('fails near-white text on a translucent white tint over white', () => {
+		const r = checkContrast([232, 232, 238], [255, 255, 255], 0.244, [255, 255, 255]);
+		expect(r.passes).toBe(false);
+		// Nothing white can fix white-on-white.
+		expect(r.suggestedOpacity).toBeNull();
+	});
+
+	it('passes the same text over a dark backdrop', () => {
+		const r = checkContrast([232, 232, 238], [255, 255, 255], 0.244, [13, 13, 20]);
+		expect(r.passes).toBe(true);
+	});
+
+	it('suggests an opacity that actually fixes the case', () => {
+		const r = checkContrast([20, 20, 20], [255, 255, 255], 0.05, [10, 10, 10]);
+		expect(r.passes).toBe(false);
+		expect(r.suggestedOpacity).not.toBeNull();
+		const fixed = checkContrast([20, 20, 20], [255, 255, 255], r.suggestedOpacity!, [10, 10, 10]);
+		expect(fixed.passes).toBe(true);
+	});
+});
+
+describe('intensity curve', () => {
+	it('moves every optic monotonically with intensity', () => {
+		const low = curveFor('regular', 0);
+		const high = curveFor('regular', 1);
+		expect(Math.abs(high.displacement)).toBeGreaterThan(Math.abs(low.displacement));
+		expect(high.blur).toBeGreaterThan(low.blur);
+		expect(high.tintOpacity).toBeGreaterThan(low.tintOpacity);
+		expect(high.specular).toBeGreaterThan(low.specular);
+	});
+
+	it('makes clear glass bend harder and tint less than regular', () => {
+		const clear = curveFor('clear', 0.6);
+		const regular = curveFor('regular', 0.6);
+		expect(Math.abs(clear.displacement)).toBeGreaterThan(Math.abs(regular.displacement));
+		expect(clear.tintOpacity).toBeLessThan(regular.tintOpacity);
+		expect(clear.blur).toBeLessThan(regular.blur);
+	});
+
+	it('lets an explicit prop beat the curve', () => {
+		const r = resolveOptions('regular', 1, { displacement: -20, specular: { angle: 90 } });
+		expect(r.displacement).toBe(-20);
+		expect(r.specular.angle).toBe(90);
+		// Everything not passed still comes from the curve.
+		expect(r.blur).toBeCloseTo(curveFor('regular', 1).blur, 5);
+	});
+
+	it('clamps intensity outside 0..1', () => {
+		expect(curveFor('regular', 5)).toEqual(curveFor('regular', 1));
+		expect(curveFor('regular', -3)).toEqual(curveFor('regular', 0));
 	});
 });

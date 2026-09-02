@@ -81,10 +81,12 @@ Full reasoning: [docs/architecture.md](./docs/architecture.md).
 
 ```svelte
 <!-- 1. just works -->
-<GlassCard>Hello</GlassCard>
+<GlassSurface>Hello</GlassSurface>
 
 <!-- 2. tokens -->
 <GlassSurface variant="regular" intensity={0.8} tint="#0a84ff" radius={28} interactive />
+<!-- `intensity` drives displacement, blur, tint and specular together.
+     Any optics prop you pass explicitly wins over the curve. -->
 
 <!-- 3. full optics -->
 <GlassSurface

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { createGlass, type Engine, type GlassInstance } from '$lib/core/index.js';
+	import { GlassSurface } from '$lib/index.js';
+	import type { Engine, Variant } from '$lib/index.js';
 	import '$lib/styles/index.css';
 
 	type Backdrop = 'text' | 'checker' | 'gradient' | 'photo';
@@ -80,34 +81,22 @@
 	};
 	let o = $state<Optics & { angle: number }>({ ...DEFAULT_PRESET, angle: 135 });
 	let engine = $state<Engine | 'pending'>('pending');
+	let variant = $state<Variant>('regular');
+	let intensity = $state(0.6);
+	let interactive = $state(true);
+	let tint = $state('#ffffff');
+	// Explicit optics always beat the intensity curve. This toggle makes that visible: with it
+	// on, the optics props are not passed at all and the curve drives everything.
+	let curveDriven = $state(true);
 	let forced = $state<'auto' | 'backdrop' | 'lens' | 'frost'>('auto');
 	let backdrop = $state<Backdrop>('text');
 	let fps = $state(0);
 
 	function preset(name: string) {
 		const p = PRESETS[name];
-		if (p) o = { ...p, angle: o.angle };
-	}
-
-	function glass(node: HTMLElement) {
-		let instance: GlassInstance | null = null;
-		$effect(() => {
-			const next = {
-				engine: forced,
-				displacement: o.displacement,
-				chromatic: o.chromatic,
-				edge: o.edge,
-				curvature: o.curvature,
-				blur: o.blur,
-				saturation: o.saturation,
-				radius: o.radius,
-				specular: { intensity: o.specular, angle: o.angle },
-				onEngineResolved: (e: Engine) => (engine = e)
-			};
-			if (instance) instance.update(next);
-			else instance = createGlass(node, next);
-		});
-		return () => instance?.destroy();
+		if (!p) return;
+		o = { ...p, angle: o.angle };
+		curveDriven = false;
 	}
 
 	// Refraction can only be judged in motion, so the card is draggable.
@@ -170,10 +159,28 @@
 			</div>
 		{/if}
 
-		<div class="card" style="translate: {x}px {y}px" {@attach glass} {@attach drag}>
+		<GlassSurface
+			class="card"
+			style="translate: {x}px {y}px"
+			{variant}
+			{intensity}
+			{interactive}
+			{tint}
+			engine={forced}
+			radius={o.radius}
+			displacement={curveDriven ? undefined : o.displacement}
+			chromatic={curveDriven ? undefined : o.chromatic}
+			edge={curveDriven ? undefined : o.edge}
+			curvature={curveDriven ? undefined : o.curvature}
+			blur={curveDriven ? undefined : o.blur}
+			saturation={curveDriven ? undefined : o.saturation}
+			specular={curveDriven ? { angle: o.angle } : { intensity: o.specular, angle: o.angle }}
+			onEngineResolved={(e) => (engine = e)}
+			{@attach drag}
+		>
 			<strong>Liquid Glass</strong>
 			<span>drag me</span>
-		</div>
+		</GlassSurface>
 	</main>
 
 	<aside class="panel">
@@ -218,7 +225,31 @@
 			</section>
 
 			<section>
-				<h2>Optics</h2>
+				<h2>Material</h2>
+				<div class="chips">
+					{#each ['regular', 'clear'] as v (v)}
+						<button class:sel={variant === v} onclick={() => (variant = v as Variant)}>{v}</button>
+					{/each}
+					<button class:sel={interactive} onclick={() => (interactive = !interactive)}>
+						interactive
+					</button>
+				</div>
+				<label class="mt">
+					intensity<b>{intensity.toFixed(2)}</b>
+					<input type="range" min="0" max="1" step="0.01" bind:value={intensity} />
+				</label>
+				<label>
+					tint<b><input type="color" bind:value={tint} /></b>
+				</label>
+			</section>
+
+			<section class:muted={curveDriven}>
+				<h2>
+					Optics
+					<button class="tiny" onclick={() => (curveDriven = !curveDriven)}>
+						{curveDriven ? 'driven by intensity' : 'explicit'}
+					</button>
+				</h2>
 				<label
 					>displacement<b>{o.displacement}</b>
 					<input type="range" min="-220" max="0" step="1" bind:value={o.displacement} /></label
@@ -327,7 +358,7 @@
 		background-position: center;
 	}
 
-	.card {
+	:global(.card) {
 		position: absolute;
 		top: 28%;
 		left: 50%;
@@ -343,16 +374,27 @@
 		user-select: none;
 		text-shadow: 0 1px 12px rgb(0 0 0 / 0.45);
 	}
-	.card:active {
+	:global(.card:active) {
 		cursor: grabbing;
 	}
-	.card strong {
+	:global(.card strong) {
 		font-size: 21px;
 		letter-spacing: -0.01em;
 	}
-	.card span {
+	:global(.card span) {
 		font-size: 11px;
 		opacity: 0.65;
+	}
+	label.mt {
+		margin-top: 4px;
+	}
+	input[type='color'] {
+		width: 34px;
+		height: 18px;
+		padding: 0;
+		border: 1px solid #262634;
+		border-radius: 4px;
+		background: none;
 	}
 
 	.panel {
@@ -403,6 +445,16 @@
 	}
 	section:last-child {
 		border-bottom: 0;
+	}
+	section.muted label {
+		opacity: 0.42;
+	}
+	button.tiny {
+		float: right;
+		font-size: 9px;
+		padding: 2px 6px;
+		text-transform: none;
+		letter-spacing: 0;
 	}
 	h2 {
 		margin: 0 0 9px;

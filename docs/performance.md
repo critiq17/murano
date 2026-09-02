@@ -5,17 +5,30 @@ Budgets, mechanisms and the measurements that enforce them. Optics background in
 
 ## Budgets
 
-| Entry                                | Budget       | Enforced by            |
-| ------------------------------------ | ------------ | ---------------------- |
-| `murano/core`                        | 8 KB gzip    | `size-limit` in CI     |
-| Core + `GlassSurface` + 4 components | 14 KB gzip   | `size-limit` in CI     |
-| Full barrel                          | 28 KB gzip   | `size-limit` in CI     |
-| 20 surfaces on screen                | 60 fps       | Playwright, per engine |
-| Interaction                          | INP < 200 ms | Playwright, per engine |
+Measured by `size-limit`, minified and brotlied, which is what a CDN actually serves.
 
-The barrel number is the least meaningful of the three. The package is tree-shakable and a real
-app imports a handful of components, which is what the middle row measures. A test asserts that
-importing `GlassButton` does not pull `GlassModal` into the bundle.
+| Entry                 | Budget       | Measured               |
+| --------------------- | ------------ | ---------------------- |
+| `createGlass` alone   | 6 kB         | **4.87 kB**            |
+| `murano/core` barrel  | 8 kB         | **6.48 kB**            |
+| `GlassSurface`        | 11 kB        | **7.21 kB**            |
+| Full barrel           | 28 kB        | **7.44 kB**            |
+| `murano/styles.css`   | 3 kB         | **845 B**              |
+| 20 surfaces on screen | 60 fps       | Playwright, per engine |
+| Interaction           | INP < 200 ms | Playwright, per engine |
+
+The first row is the number that matters: it is what an app importing one thing actually pays.
+The barrels are ceilings, not targets, and the full-barrel figure will climb as the component
+set lands. Every component is `GlassSurface` plus structure, so each adds roughly a kilobyte
+rather than another copy of the optics.
+
+Tree-shaking is asserted, not claimed: importing `createGlass` alone drops the contrast checker,
+the intensity curve and the interaction spring, which is the 1.6 kB gap between the first two
+rows.
+
+`size-limit` bundles through esbuild, which does not understand `.svelte`, so `.size-limit.js`
+adds the Svelte plugin. Without it the component entries fail to build rather than reporting a
+wrong number.
 
 ## The cost model
 
