@@ -6,7 +6,7 @@
 
 [![npm](https://img.shields.io/npm/v/murano?color=%230a84ff)](https://npmjs.com/package/murano)
 [![size](https://img.shields.io/bundlephobia/minzip/murano?label=core%20gzip)](https://bundlephobia.com/package/murano)
-[![CI](https://img.shields.io/github/actions/workflow/status/artem/murano/ci.yml?branch=main)](https://github.com/artem/murano/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/critiq17/murano/ci.yml?branch=master)](https://github.com/critiq17/murano/actions)
 [![license](https://img.shields.io/npm/l/murano)](./LICENSE)
 
 <!-- 5s loop: a glass card dragged across a photo, edges bending, chroma at the rim -->

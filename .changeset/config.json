@@ -1,9 +1,9 @@
 {
 	"$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
-	"changelog": ["@changesets/changelog-github", { "repo": "artem/murano" }],
+	"changelog": ["@changesets/changelog-github", { "repo": "critiq17/murano" }],
 	"commit": false,
 	"access": "public",
-	"baseBranch": "main",
+	"baseBranch": "master",
 	"updateInternalDependencies": "patch",
 	"ignore": ["@murano/docs"]
 }

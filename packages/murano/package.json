@@ -22,11 +22,11 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/artem/murano.git"
+		"url": "git+https://github.com/critiq17/murano.git"
 	},
 	"homepage": "https://murano.dev",
 	"bugs": {
-		"url": "https://github.com/artem/murano/issues"
+		"url": "https://github.com/critiq17/murano/issues"
 	},
 	"files": [
 		"dist",
